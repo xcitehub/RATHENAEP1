@@ -1374,11 +1374,11 @@ static int itemdb_read_sqldb(void) {
 
 	const char* item_db_name[] = {
 #ifdef RENEWAL
-		item_db_re_db,
+		mapserv_table(item_db_re_table),
 #else
-		item_db_db,
+		mapserv_table(item_db_table),
 #endif
-		item_db2_db
+		mapserv_table(item_db2_table)
 	};
 	int fi;
 
@@ -1459,7 +1459,7 @@ static void itemdb_read(void) {
 		"/"DBIMPORT,
 	};
 	
-	if (db_use_sqldbs)
+	if (mapserv_schema_config.db_use_sqldbs)
 		itemdb_read_sqldb();
 	else
 		itemdb_readdb();

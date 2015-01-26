@@ -364,7 +364,7 @@ int chlogif_parse_ackchangesex(int fd, struct char_session_data* sd){
 				node->sex = sex;
 
 			// get characters
-			if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `char_id`,`class`,`guild_id` FROM `%s` WHERE `account_id` = '%d'", schema_config.char_db, acc) )
+			if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `char_id`,`class`,`guild_id` FROM `%s` WHERE `account_id` = '%d'", charserv_table(char_table), acc) )
 				Sql_ShowDebug(sql_handle);
 			for( i = 0; i < MAX_CHARS && SQL_SUCCESS == Sql_NextRow(sql_handle); ++i )
 			{
@@ -400,7 +400,7 @@ int chlogif_parse_ackchangesex(int fd, struct char_session_data* sd){
 						class_[i] = (sex ? JOB_KAGEROU : JOB_OBORO);
 				}
 
-				if( SQL_ERROR == Sql_Query(sql_handle, "UPDATE `%s` SET `class`='%d', `weapon`='0', `shield`='0', `head_top`='0', `head_mid`='0', `head_bottom`='0' WHERE `char_id`='%d'", schema_config.char_db, class_[i], char_id[i]) )
+				if( SQL_ERROR == Sql_Query(sql_handle, "UPDATE `%s` SET `class`='%d', `weapon`='0', `shield`='0', `head_top`='0', `head_mid`='0', `head_bottom`='0' WHERE `char_id`='%d'", charserv_table(char_table), class_[i], char_id[i]) )
 					Sql_ShowDebug(sql_handle);
 
 				if( guild_id[i] )// If there is a guild, update the guild_member data [Skotlex]
