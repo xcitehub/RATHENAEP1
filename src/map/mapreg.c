@@ -16,7 +16,7 @@
 static DBMap* mapreg_db = NULL; // int var_id -> int value
 static DBMap* mapregstr_db = NULL; // int var_id -> char* value
 
-static char mapreg_table[32] = "mapreg";
+static char mapreg_table[32];
 static bool mapreg_dirty = false;
 #define MAPREG_AUTOSAVE_INTERVAL (300*1000)
 
@@ -216,19 +216,10 @@ void mapreg_init(void)
 {
 	mapreg_db = idb_alloc(DB_OPT_BASE);
 	mapregstr_db = idb_alloc(DB_OPT_RELEASE_DATA);
+	safestrncpy(mapreg_table, StringBuf_Value(mapserv_schema_config.mapreg_table), sizeof(mapreg_table));
 
 	script_load_mapreg();
 
 	add_timer_func_list(script_autosave_mapreg, "script_autosave_mapreg");
 	add_timer_interval(gettick() + MAPREG_AUTOSAVE_INTERVAL, script_autosave_mapreg, 0, 0, MAPREG_AUTOSAVE_INTERVAL);
-}
-
-bool mapreg_config_read(const char* w1, const char* w2)
-{
-	if(!strcmpi(w1, "mapreg_db"))
-		safestrncpy(mapreg_table, w2, sizeof(mapreg_table));
-	else
-		return false;
-
-	return true;
 }

@@ -280,11 +280,15 @@ static bool account_db_sql_set_property(AccountDB* self, const char* key, const 
 		if( strcmpi(key, "db") == 0 )
 			StringBuf_PrintfClear(db->db_database, value);
 		else
-		if( strcmpi(key, "account_db") == 0 )
+		if( strcmpi(key, "account_table") == 0 ) {
 			StringBuf_PrintfClear(db->account_table, value);
+			ShowDebug("set account_table: %s\n", StringBuf_Value(db->account_table));
+		}
 		else
-		if( strcmpi(key, "accreg_db") == 0 )
+		if( strcmpi(key, "accreg_table") == 0 ) {
 			StringBuf_PrintfClear(db->accreg_table, value);
+			ShowDebug("set accreg_table: %s\n", StringBuf_Value(db->accreg_table));
+		}
 		else
 			return false;// not found
 		return true;
