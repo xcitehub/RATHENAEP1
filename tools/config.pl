@@ -45,6 +45,8 @@ my $sClean	= 0;
 my $sTarget	= "All";
 my $sHelp	= 0;
 my $sOS;
+my $sDBA_pwd = "";
+my $sIsTravis = 0;
 GetArgs();
 Main();
 
@@ -56,6 +58,8 @@ sub GetArgs {
     'target=s'	=> \$sTarget,	 #Target (which setup to run)
     'Force=i'	=> \$sForce,	 #Force (bypass verification)
     'OS=s'	=> \$sOS, #OS (specify the OS you wish to use)
+    'DBA_pwd=s'	=> \$sDBA_pwd, #DBA_pwd (specify the DB Admin password you wish to use)
+    'IsTravis=i'	=> \$sIsTravis, #mark it's a travis call
     'help!' => \$sHelp,
     ) or $sHelp=1; #display help if invalid option
     my $sValidTarget = "All|Conf|DB|Inst|Dump";
@@ -68,7 +72,9 @@ sub GetArgs {
 	    ."\t --C => Clean (remove file, db, user before adding new)\n"
 	    ."\t --target => target (specify which setup to run [$sValidTarget])\n"
 	    ."\t --Force => Force (bypass verification)\n"
-	    ."\t --OS => (specify the OS you wish to use and avoid check)";
+	    ."\t --OS => (specify the OS you wish to use and avoid check)"
+	#    ."\t --IsTravis => (mark it's a travis config request)" #hidden doc
+	    ."\t --DBA_pwd => (specify the password admin you which to use)";
 	exit;
     }
     unless($sTarget =~ /$sValidTarget/i){
@@ -195,15 +201,17 @@ sub GetOS {
 	return $sOS;
 }
 
+# depreciated (cyclic dependancies.. schedule for deletion) [lighta]
 sub InstallSoft {
     print "\n== Installing Software ==\n";
     print "NOTE: This auto-install feature is experimental. Package names vary in different distributions and versions, so they may be incorrect.\n";
     $sOS = GetOS() unless $sOS;
     if($sOS eq "quit"){ print "Skipping software installation...\n"; return; }
     elsif($sOS =~ /Ubuntu|Debian/i) { #tested on ubuntu 12.10,13.10
-	my @aListSoft = ("gcc","gdb","zlibc","zlib1g-dev","make","git","mysql-client","mysql-server","mysql-common","libmysqlclient-dev","phpmyadmin","libpcre3-dev");
-	print "Going to install: @aListSoft\n";
-	system("sudo apt-get install @aListSoft");
+		my @aListSoft = ("gcc","gdb","zlibc","zlib1g-dev","make","git","mysql-client","mysql-server","mysql-common","libmysqlclient-dev","phpmyadmin","libpcre3-dev");
+		print "Going to install: @aListSoft\n";
+		if($sIsTravis) { system("sudo apt-get install -qq @aListSoft"); }
+		else { system("sudo apt-get install @aListSoft"); }
 	}
 	elsif($sOS =~ /Fedora|CentOs/i){ #tested on fedora 18,19,20 /centos 5,6,7
 	my @aListSoft = ("gcc","gdb","zlib","zlib-devel","make","git","mariadb-server","mariadb","mariadb-devel","phpmyadmin","pcre-devel");
@@ -399,7 +407,7 @@ sub ApplySetupDB { my($rhConfig) = @_;
     my $sDsn = "dbi:mysql::$sHost:$sPort"; #don't try to auto connect to db
     $$rhConfig{"Dsn"} = $sDsn;
 
-    $sDbH = RootCo($rhConfig);
+    $sDbH = RootCo($rhConfig,$sDBA_pwd);
     CreateDB($sDbH,$rhConfig); #create db if not exist
     $sDbH = CreateUser($sDbH,$rhConfig); #loged as user now
     LoadSqlFile($sDbH,$rhConfig); #Load .sql file into db

@@ -82,6 +82,30 @@ include( CheckIncludeFile )
 include( CheckFunctionExists )
 include( FindFunctionLibrary )
 include( TestBigEndian )
+##
+include(CheckIncludeFiles)
+include(CheckLibraryExists)
+include(CheckSymbolExists)
+include(CheckTypeSize)
+
+###############################################################################
+# Check headers
+set(INCLUDES "")
+macro(ck_check_include_file header var)
+  check_include_files("${INCLUDES};${header}" ${var})
+  if(${var})
+    set(INCLUDES ${INCLUDES} ${header})
+  endif(${var})
+endmacro(ck_check_include_file)
+
+ck_check_include_file("stdlib.h" HAVE_STDLIB_H)
+
+###############################################################################
+# Check for integer types
+# (The following are used in check.h. Regardless if they are used in
+# the project, they will need to be checked in order to use Check).
+check_type_size(intmax_t INTMAX_T)
+check_type_size(uintmax_t UINTMAX_T)
 
 #
 # PACKETVER
@@ -585,7 +609,7 @@ endif( INSTALL_COMPONENT_RUNTIME )
 set( TARGET_LIST  CACHE INTERNAL "" )
 add_subdirectory( 3rdparty )
 add_subdirectory( src )
-
+add_subdirectory(tests)
 
 #####################################################################
 # final checks and warnings
@@ -603,3 +627,11 @@ message( STATUS "Available targets:" )
 foreach( _TARGET IN ITEMS ${TARGET_LIST} )
 	message( STATUS "\t${_TARGET}" )
 endforeach()
+
+
+
+
+###############################################################################
+# Unit tests
+enable_testing()
+add_test(NAME check_script COMMAND check_script)

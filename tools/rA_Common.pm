@@ -65,14 +65,20 @@ sub CheckUsedPort { my($sPort) = @_;
 }
 
 
-sub RootCo { my($rhConfig) = @_;
+sub RootCo { my($rhConfig,$sDBA_pwd) = @_;
 	print "\n== Entering RootCo ==\n";
 	my $sDbH = 0;
 	my $sDsn = $$rhConfig{"Dsn"}; #mysql server dest
 	my $sUser = $$rhConfig{SQL_UID}; #verify desired user
 	print "My dsn = $sDsn \n";
 	if($sUser eq "root"){
-		my $sPw = $$rhConfig{SQL_PW};
+	    my $sPw;
+		if($sDBA_pwd) {
+			$sPw = $sDBA_pwd;
+		}
+		else {
+			$sPw = $$rhConfig{SQL_PW};
+		}
 		$sDbH = DBI->connect($sDsn, "root", $sPw);
 		unless($sDbH) { warn "Your root password doesn't seem valid for mysql. Please check your desired-conf.\n"; }
 	}
